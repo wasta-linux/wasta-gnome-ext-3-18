@@ -1,0 +1,14 @@
+Source: wasta-gnome-ext-3-18
+Section: utils
+Priority: extra
+Maintainer: Rik Shaw <rikshaw76@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.5
+Homepage: https://github.com/wasta-linux/wasta-gnome-ext-3-18
+
+Package: wasta-gnome-ext-3-18
+Architecture: all
+Depends: gnome-shell, ${shlibs:Depends}, ${misc:Depends}
+Conflicts: wasta-gnome-ext-3-16
+Description: Wasta Gnome-Shell Extensions for Gnome 3.18
+ Gnome-Shell extensions for Wasta-Linux using Gnome 3.18
