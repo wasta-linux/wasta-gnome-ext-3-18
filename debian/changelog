@@ -1,3 +1,9 @@
+wasta-gnome-ext-3-18 (0.1.1) xenial; urgency=medium
+
+  * correcting postinst script name
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Sun, 27 Dec 2015 09:01:57 +0300
+
 wasta-gnome-ext-3-18 (0.1.0) xenial; urgency=medium
 
   * initial commit
