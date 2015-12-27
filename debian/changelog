@@ -1,4 +1,4 @@
-wasta-gnome-ext-3-18 (0.1.1) xenial; urgency=medium
+wasta-gnome-ext-3-18 (0.1.2) xenial; urgency=medium
 
   * correcting postinst script name
 
