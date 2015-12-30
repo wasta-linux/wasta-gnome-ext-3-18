@@ -1,3 +1,12 @@
+wasta-gnome-ext-3-18 (0.1.4) xenial; urgency=medium
+
+  * install-files/extensions/user-theme: adding override to set theme
+    to 'Arc-Dark'
+  * renamed wasta-gnome-ext-3-18 folder to just wasta-gnome-ext so when
+    new versions of this package come out not as hard to modify
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Wed, 30 Dec 2015 09:20:12 +0300
+
 wasta-gnome-ext-3-18 (0.1.3) xenial; urgency=medium
 
   * adding wasta-gnome-ext-3-18 folder to git
