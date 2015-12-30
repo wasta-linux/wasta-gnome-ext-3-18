@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # ==============================================================================
-# wasta-gnome-ext-3-18-postinst.sh
+# wasta-gnome-ext-postinst.sh
 #
 #   This script is automatically run by the postinst configure step on
 #       installation.  It can be manually re-run, but is
 #       only intended to be run at package installation.
 #
 #   2015-12-26 rik: initial script
+#   2015-12-30 rik: adding user-theme schema compile
 #
 # ==============================================================================
 
@@ -29,7 +30,7 @@ fi
 # ------------------------------------------------------------------------------
 
 echo
-echo "*** Script Entry: wasta-gnome-ext-3-18-postinst.sh"
+echo "*** Script Entry: wasta-gnome-ext-postinst.sh"
 echo
 
 # ------------------------------------------------------------------------------
@@ -48,13 +49,15 @@ glib-compile-schemas \
 glib-compile-schemas \
     /usr/share/gnome-shell/extensions/gnomenu@panacier.gmail.com/schemas/
 glib-compile-schemas \
+    /usr/share/gnome-shell/extensions/user-theme@gnome-shell-extensions.gcampax.github.com/schemas/
+glib-compile-schemas \
     /usr/share/gnome-shell/extensions/windowoverlay-icons@sustmidown.centrum.cz/schemas/
 
 # ------------------------------------------------------------------------------
 # Finished
 # ------------------------------------------------------------------------------
 echo
-echo "*** Script Exit: wasta-gnome-ext-3-18-postinst.sh"
+echo "*** Script Exit: wasta-gnome-ext-postinst.sh"
 echo
 
 exit 0
