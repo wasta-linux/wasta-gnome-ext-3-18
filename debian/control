@@ -8,7 +8,7 @@ Homepage: https://github.com/wasta-linux/wasta-gnome-ext-3-18
 
 Package: wasta-gnome-ext-3-18
 Architecture: all
-Depends: gnome-shell, ${shlibs:Depends}, ${misc:Depends}
-Conflicts: wasta-gnome-ext-3-16
+Depends: gnome-shell  (>= 3.18.2), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: wasta-gnome-ext-3-16, gnome-shell-extensions
 Description: Wasta Gnome-Shell Extensions for Gnome 3.18
  Gnome-Shell extensions for Wasta-Linux using Gnome 3.18
