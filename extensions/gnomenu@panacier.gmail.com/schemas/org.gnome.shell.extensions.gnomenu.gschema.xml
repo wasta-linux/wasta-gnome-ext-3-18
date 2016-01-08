@@ -154,7 +154,7 @@
       <description>Hide the Categories Panel of the menu</description>
     </key>
     <key enum="org.gnome.shell.extensions.gnomenu.selectMethod" name="category-selection-method">
-      <default>'Click'</default>
+      <default>'Hover'</default>
       <summary>Method of selecting categories</summary>
       <description>Method of selecting categories</description>
     </key>

@@ -2560,13 +2560,13 @@ const PanelMenuButton = new Lang.Class({
                     this._selectCategory(allAppCategory);
                     this.selectedAppTitle.set_text(allAppCategory.label.get_text());
                     this.selectedAppDescription.set_text('');
+                    this._hoverTimeoutId = 0;
                 }));
             }));
             allAppCategory.actor.connect('leave-event', Lang.bind(this, function() {
                 if (this._hoverTimeoutId > 0)
                 {
                     Mainloop.source_remove(this._hoverTimeoutId);
-                    this._hoverTimeoutId = 0;
                 }
                 this.selectedAppTitle.set_text('');
                 this.selectedAppDescription.set_text('');
@@ -2605,13 +2605,13 @@ const PanelMenuButton = new Lang.Class({
                     this._selectCategory(freqAppCategory);
                     this.selectedAppTitle.set_text(freqAppCategory.label.get_text());
                     this.selectedAppDescription.set_text('');
+                    this._hoverTimeoutId = 0;
                  }));
             }));
             freqAppCategory.actor.connect('leave-event', Lang.bind(this, function() {
                 if (this._hoverTimeoutId > 0)
                 {
                     Mainloop.source_remove(this._hoverTimeoutId);
-                    this._hoverTimeoutId = 0;
                 }
                 this.selectedAppTitle.set_text('');
                 this.selectedAppDescription.set_text('');
@@ -2650,13 +2650,13 @@ const PanelMenuButton = new Lang.Class({
                     this._selectCategory(favAppCategory);
                     this.selectedAppTitle.set_text(favAppCategory.label.get_text());
                     this.selectedAppDescription.set_text('');
+                    this._hoverTimeoutId = 0;
                 }));
             }));
             favAppCategory.actor.connect('leave-event', Lang.bind(this, function() {
                 if (this._hoverTimeoutId > 0)
                 {
                     Mainloop.source_remove(this._hoverTimeoutId);
-                    this._hoverTimeoutId = 0;
                 }
                 this.selectedAppTitle.set_text('');
                 this.selectedAppDescription.set_text('');
@@ -2707,13 +2707,13 @@ const PanelMenuButton = new Lang.Class({
                                 this._selectCategory(appCategory);
                                 this.selectedAppTitle.set_text(appCategory.label.get_text());
                                 this.selectedAppDescription.set_text('');
+                                this._hoverTimeoutId = 0;
                             }));
                         }));
                         appCategory.actor.connect('leave-event', Lang.bind(this, function() {
                             if (this._hoverTimeoutId > 0)
                             {
                                 Mainloop.source_remove(this._hoverTimeoutId);
-                                this._hoverTimeoutId = 0;
                             }
                             this.selectedAppTitle.set_text('');
                             this.selectedAppDescription.set_text('');
