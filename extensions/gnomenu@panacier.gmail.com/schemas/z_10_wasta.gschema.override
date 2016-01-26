@@ -17,6 +17,8 @@
 apps-list-icon-size = 32
 apps-grid-column-count = 4
 apps-grid-icon-size = 48
+apps-grid-label-width = 112
+category-hover-delay = 250
 category-selection-method = 'Hover'
 disable-activities-hotcorner = true
 disable-panel-menu-hotspot = true
@@ -31,6 +33,7 @@ panel-view-icon-name = ['wasta-emblem-photos-symbolic']
 panel-view-label-text = ['    ']
 shortcuts-display = 'Favorites'
 shortcuts-icon-size = 32
+show-settings-to = 'sudo'
 startup-apps-display = 'Frequent'
-startup-view-mode = 'List'
+startup-view-mode = 'Grid'
 use-panel-menu-icon = true

@@ -1,3 +1,10 @@
+wasta-gnome-ext-3-18 (0.1.5) precise; urgency=low
+
+  * rebased with upstream.  Adds better search, long labels, and
+    hidden settings button.
+
+ -- Justin Luth <jluth@mail.com>  Tue, 26 Jan 2016 14:51:52 +0300
+
 wasta-gnome-ext-3-18 (0.1.4) xenial; urgency=medium
 
   * install-files/extensions/user-theme: adding override to set theme
