@@ -6,7 +6,6 @@
   * ========================================================================================================
  */
 
-const _DEBUG_ = false;
 
 const Gio = imports.gi.Gio;
 const Clutter = imports.gi.Clutter;
@@ -78,7 +77,6 @@ const myWorkspaceThumbnail = new Lang.Class({
     Extends: WorkspaceThumbnail.WorkspaceThumbnail,
 
     _init : function(metaWorkspace, gsVersion) {
-        if (_DEBUG_) global.log("myWorkspaceThumbnail: init");
         this._gsCurrentVersion = gsVersion;
         this.parent(metaWorkspace);
     },
@@ -122,7 +120,6 @@ const myThumbnailsBox = new Lang.Class({
     Extends: WorkspaceThumbnail.ThumbnailsBox,
 
     _init: function(gsVersion, settings, filler) {
-        if (_DEBUG_) global.log("myThumbnailsBox: init");
         this._gsCurrentVersion = gsVersion;
         this._mySettings = settings;
         this._thumbnailsBoxFiller = filler;
@@ -195,7 +192,6 @@ const myThumbnailsBox = new Lang.Class({
 
     // override _createThumbnails to remove global n-workspaces notification
     _createThumbnails: function() {
-        if (_DEBUG_) global.log("mythumbnailsBox: _createThumbnails");
         this._switchWorkspaceNotifyId =
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this._activeWorkspaceChanged));
@@ -274,7 +270,6 @@ const myThumbnailsBox = new Lang.Class({
 
     // override _onButtonRelease to provide customized click actions (i.e. overview on right click)
     _onButtonRelease: function(actor, event) {
-        if (_DEBUG_) global.log("mythumbnailsBox: _onButtonRelease");
         let button = event.get_button();
         if (button == 3) { //right click
             // pass right-click event on allowing it to bubble up
@@ -306,14 +301,12 @@ const myThumbnailsBox = new Lang.Class({
         if (this._thumbnails.length == 0)
             return;
 
-        if (_DEBUG_) global.log("myThumbnailsBox: _getPreferredWidth - actualThumbnailWidth = "+this._actualThumbnailWidth);
         let scale;
         if (this._actualThumbnailWidth > 0) {
             scale = this._actualThumbnailWidth / this._porthole.width;
         } else {
             scale = INIT_THUMBNAIL_WIDTH / this._porthole.width;
         }
-        if (_DEBUG_) global.log ("myThumbnailsBox: _getPreferredWidth - scale is min of thumbnailWidth scale = "+scale+" vs MAX_THUMBNAIL_SCALE = "+MAX_THUMBNAIL_SCALE);
         scale = Math.min(scale, MAX_THUMBNAIL_SCALE);
 
         let width = Math.round(this._porthole.width * scale);
@@ -336,14 +329,12 @@ const myThumbnailsBox = new Lang.Class({
         let nWorkspaces = global.screen.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
-        if (_DEBUG_) global.log("myThumbnailsBox: _getPreferredHeight - actualThumbnailWidth = "+this._actualThumbnailWidth);
         let scale;
         if (this._actualThumbnailWidth > 0) {
             scale = this._actualThumbnailWidth / this._porthole.width;
         } else {
             scale = INIT_THUMBNAIL_WIDTH / this._porthole.width;
         }
-        if (_DEBUG_) global.log ("myThumbnailsBox: _getPreferredHeight - scale is min of thumbnailWidth scale = "+scale+" vs MAX_THUMBNAIL_SCALE = "+MAX_THUMBNAIL_SCALE);
         scale = Math.min(scale, MAX_THUMBNAIL_SCALE);
 
         alloc.min_size = totalSpacing;
@@ -490,7 +481,6 @@ const myThumbnailsBox = new Lang.Class({
 
     // override _activeWorkspaceChanged to eliminate errors thrown
     _activeWorkspaceChanged: function(wm, from, to, direction) {
-        if (_DEBUG_) global.log("mythumbnailsBox: _activeWorkspaceChanged - thumbnail count = "+this._thumbnails.length);
         let thumbnail;
         let activeWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._thumbnails.length; i++) {

@@ -302,11 +302,18 @@ const dockedDash = new Lang.Class({
                 'item-drag-cancelled',
                 Lang.bind(this, this._onDragEnd)
             ],
-            // update wne monitor changes, for instance in multimonitor when monitor are attached
+            // update when monitor changes, for instance in multimonitor when monitor are attached
             [
                 global.screen,
                 'monitors-changed',
                 Lang.bind(this, this._resetPosition )
+            ],
+            // update when workarea changes, for instance if  other extensions modify the struts
+            //(like moving th panel at the bottom)
+            [
+                global.screen,
+                'workareas-changed',
+                Lang.bind(this, this._resetPosition)
             ],
             [
                 Main.overview,
@@ -426,13 +433,13 @@ const dockedDash = new Lang.Class({
         // The public method trackChrome requires the actor to be child of a tracked actor. Since I don't want the parent
         // to be tracked I use the private internal _trackActor instead.
         Main.uiGroup.add_child(this.actor);
-        Main.layoutManager._trackActor(this._slider.actor, {trackFullscreen: true});
+        Main.layoutManager._trackActor(this._slider.actor);
 
         // Keep the dash below the modalDialogGroup
         Main.layoutManager.uiGroup.set_child_below_sibling(this.actor,Main.layoutManager.modalDialogGroup);
 
         if ( this._settings.get_boolean('dock-fixed') )
-          Main.layoutManager._trackActor(this.dash.actor, {affectsStruts: true});
+          Main.layoutManager._trackActor(this._box, {affectsStruts: true, trackFullscreen: true});
 
         // pretend this._slider is isToplevel child so that fullscreen is actually tracked
         let index = Main.layoutManager._findActor(this._slider.actor);
@@ -461,6 +468,13 @@ const dockedDash = new Lang.Class({
                 Main.overview.viewSelector._activePage = Main.overview.viewSelector._workspacesPage;
 
         this._updateVisibilityMode();
+
+        // In case we are already inside the overview when the extension is loaded,
+        // for instance on unlocking the screen if it was locked with the overview open.
+        if (Main.overview.visibleTarget){
+            this._onOverviewShowing();
+            this._pageChanged();
+        }
 
         // Setup pressure barrier (GS38+ only)
         this._updatePressureBarrier();
@@ -550,9 +564,9 @@ const dockedDash = new Lang.Class({
         this._settings.connect('changed::dock-fixed', Lang.bind(this, function(){
 
             if(this._settings.get_boolean('dock-fixed')) {
-                Main.layoutManager._trackActor(this.dash.actor, {affectsStruts: true});
+                Main.layoutManager._trackActor(this._box, {affectsStruts: true, trackFullscreen: true});
             } else {
-                Main.layoutManager._untrackActor(this.dash.actor);
+                Main.layoutManager._untrackActor(this._box);
             }
 
             this._resetPosition();
@@ -823,7 +837,7 @@ const dockedDash = new Lang.Class({
     _dockDwellTimeout: function() {
         this._dockDwellTimeoutId = 0;
 
-        if (this._monitor.inFullscreen)
+        if (!this._settings.get_boolean('autohide-in-fullscreen') && this._monitor.inFullscreen)
             return GLib.SOURCE_REMOVE;
 
         // We don't want to open the tray when a modal dialog
@@ -854,12 +868,17 @@ const dockedDash = new Lang.Class({
             this._pressureBarrier = null;
         }
 
+        if (this._barrier){
+            this._barrier.destroy();
+            this._barrier = null;
+        }
+
         // Create new pressure barrier based on pressure threshold setting
         if (this._canUsePressure) {
             this._pressureBarrier = new Layout.PressureBarrier(pressureThreshold, this._settings.get_double('show-delay')*1000,
                                 Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW);
             this._pressureBarrier.connect('trigger', Lang.bind(this, function(barrier){
-                if (this._monitor.inFullscreen)
+                if (!this._settings.get_boolean('autohide-in-fullscreen') && this._monitor.inFullscreen)
                     return;
                 this._onPressureSensed();
             }));
@@ -961,17 +980,24 @@ const dockedDash = new Lang.Class({
         // Ensure variables linked to settings are updated.
         this._updateVisibilityMode();
 
-        this._monitor = this._getMonitor();
-
-        let unavailableTopSpace = 0;
-        let unavailableBottomSpace = 0;
-
+        let monitorIndex = this._settings.get_int('preferred-monitor');
         let extendHeight = this._settings.get_boolean('extend-height');
+
+        if (monitorIndex >0 && monitorIndex< Main.layoutManager.monitors.length)
+            this._monitor = Main.layoutManager.monitors[monitorIndex];
+        else {
+            monitorIndex = Main.layoutManager.primaryIndex
+            this._monitor = Main.layoutManager.primaryMonitor;
+        }
+
+        // Note: do not use the workarea coordinates in the direction on which the dock is placed,
+        // to avoid a loop [position change -> workArea change -> position change] with
+        // fixed dock.
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(monitorIndex);
 
         // Reserve space for the dash on the overview
         // if the dock is on the primary monitor
         if (this._isPrimaryMonitor()){
-            unavailableTopSpace = Main.panel.actor.height;
             this._dashSpacer.show();
         } else {
             // No space is required in the overview of the dash
@@ -989,20 +1015,19 @@ const dockedDash = new Lang.Class({
 
         if(this._isHorizontal){
 
-            let availableWidth = this._monitor.width;
-            this.actor.width = Math.round( fraction * availableWidth);
+            this.actor.width = Math.round( fraction * workArea.width);
 
             let pos_y;
             if( this._position == St.Side.BOTTOM) {
                 pos_y =  this._monitor.y + this._monitor.height;
                 anchor_point = Clutter.Gravity.SOUTH_WEST;
             } else {
-                pos_y =  this._monitor.y + unavailableTopSpace;
+                pos_y = this._monitor.y;
                 anchor_point = Clutter.Gravity.NORTH_WEST;
             }
 
             this.actor.move_anchor_point_from_gravity(anchor_point);
-            this.actor.x = this._monitor.x + Math.round( (1-fraction)/2 * availableWidth);
+            this.actor.x = workArea.x + Math.round( (1-fraction)/2 * workArea.width);
             this.actor.y = pos_y;
 
             if(extendHeight){
@@ -1015,8 +1040,7 @@ const dockedDash = new Lang.Class({
 
         } else {
 
-            let availableHeight = this._monitor.height - unavailableTopSpace - unavailableBottomSpace;
-            this.actor.height = Math.round( fraction * availableHeight);
+            this.actor.height = Math.round( fraction * workArea.height);
 
             let pos_x;
             if( this._position == St.Side.RIGHT) {
@@ -1029,7 +1053,7 @@ const dockedDash = new Lang.Class({
 
             this.actor.move_anchor_point_from_gravity(anchor_point);
             this.actor.x = pos_x;
-            this.actor.y = this._monitor.y + unavailableTopSpace + Math.round( (1-fraction)/2 * availableHeight);
+            this.actor.y = workArea.y + Math.round( (1-fraction)/2 * workArea.height);
 
             if(extendHeight){
                 this.dash._container.set_height(this.actor.height);
@@ -1098,19 +1122,6 @@ const dockedDash = new Lang.Class({
     _revertPanelCorners: function() {
         Main.panel._leftCorner.actor.show();
         Main.panel._rightCorner.actor.show();
-    },
-
-    _getMonitor: function(){
-
-        let monitorIndex = this._settings.get_int('preferred-monitor');
-        let monitor;
-
-        if (monitorIndex >0 && monitorIndex< Main.layoutManager.monitors.length)
-            monitor = Main.layoutManager.monitors[monitorIndex];
-        else
-            monitor = Main.layoutManager.primaryMonitor;
-
-        return monitor;
     },
 
     _removeAnimations: function() {
@@ -1185,6 +1196,7 @@ const dockedDash = new Lang.Class({
         // status (due to the _syncShowAppsButtonToggled function below) and it
         // has already performed the desired action.
 
+        let animate = this._settings.get_boolean('animate-show-apps');
         let selector = Main.overview.viewSelector;
 
         if(selector._showAppsButton.checked !== this.dash.showAppsButton.checked){
@@ -1201,60 +1213,68 @@ const dockedDash = new Lang.Class({
             });
 
             if(this.dash.showAppsButton.checked){
-                // force entering overview if needed
+
+                // force spring animation triggering.By default the animation only
+                // runs if we are already inside the overview.
                 if (!Main.overview._shown) {
-
-                    let view = Main.overview.viewSelector.appDisplay._views[visibleView].view;
-                    let grid = view._grid;
-
-                    // Animate in the the appview, hide the appGrid to avoiud flashing
-                    // Go to the appView before entering the overview, skipping the workspaces.
-                    // Do this manually avoiding opacity in transitions so that the setting of the opacity
-                    // to 0 doesn't get overwritten.
-                    Main.overview.viewSelector._activePage.opacity = 0;
-                    Main.overview.viewSelector._activePage.hide();
-                    Main.overview.viewSelector._activePage = Main.overview.viewSelector._appsPage;
-                    Main.overview.viewSelector._activePage.show();
-                    grid.actor.opacity = 0;
-                    selector._showAppsButton.checked = true;
-
-                    // The animation has to be trigered manually because the AppDisplay.animate 
-                    // method is waiting for an allocation not happening, as we skip the workspace view
-                    // and the appgrid could already be allocated from previous shown.
-                    // It has to be triggered after the overview is shown as wrong coordinates are obtained
-                    // otherwise.
-                    let overviewShownId = Main.overview.connect('shown', Lang.bind(this, function(){
-                        Main.overview.disconnect(overviewShownId);
-                        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this, function() {
-                            grid.actor.opacity = 255;
-                            grid.animateSpring(IconGrid.AnimationDirection.IN, this.dash.showAppsButton);
-                        }));
-                      }));
-
-                    // Finally show the overview
-                    Main.overview.show();
                     this.forcedOverview = true;
-                } else {
-                    selector._showAppsButton.checked = true;
+                    if (animate) {
+                        let view = Main.overview.viewSelector.appDisplay._views[visibleView].view;
+                        let grid = view._grid;
+
+                        // Animate in the the appview, hide the appGrid to avoiud flashing
+                        // Go to the appView before entering the overview, skipping the workspaces.
+                        // Do this manually avoiding opacity in transitions so that the setting of the opacity
+                        // to 0 doesn't get overwritten.
+                        Main.overview.viewSelector._activePage.opacity = 0;
+                        Main.overview.viewSelector._activePage.hide();
+                        Main.overview.viewSelector._activePage = Main.overview.viewSelector._appsPage;
+                        Main.overview.viewSelector._activePage.show();
+                        grid.actor.opacity = 0;
+
+
+                        // The animation has to be trigered manually because the AppDisplay.animate
+                        // method is waiting for an allocation not happening, as we skip the workspace view
+                        // and the appgrid could already be allocated from previous shown.
+                        // It has to be triggered after the overview is shown as wrong coordinates are obtained
+                        // otherwise.
+                        let overviewShownId = Main.overview.connect('shown', Lang.bind(this, function(){
+                            Main.overview.disconnect(overviewShownId);
+                            Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this, function() {
+                                grid.actor.opacity = 255;
+                                grid.animateSpring(IconGrid.AnimationDirection.IN, this.dash.showAppsButton);
+                            }));
+                          }));
+                    }
                 }
+
+                // Finally show the overview
+                selector._showAppsButton.checked = true;
+                Main.overview.show();
+
             } else {
                 if (this.forcedOverview) {
                     // force exiting overview if needed
 
-                    // Manually trigger springout animation without activating the
-                    // workspaceView to avoid the zoomout animation. Hide the appPage
-                    // onComplete to avoid ugly flashing of original icons.
-                    let view = Main.overview.viewSelector.appDisplay._views[visibleView].view;
-                    let grid = view._grid;
-                    view.animate(IconGrid.AnimationDirection.OUT, Lang.bind(this, function(){
-                        Main.overview.viewSelector._appsPage.hide();
+                    if (animate) {
+                        // Manually trigger springout animation without activating the
+                        // workspaceView to avoid the zoomout animation. Hide the appPage
+                        // onComplete to avoid ugly flashing of original icons.
+                        let view = Main.overview.viewSelector.appDisplay._views[visibleView].view;
+                        let grid = view._grid;
+                        view.animate(IconGrid.AnimationDirection.OUT, Lang.bind(this, function(){
+                            Main.overview.viewSelector._appsPage.hide();
+                            Main.overview.hide();
+                            selector._showAppsButton.checked = false;
+                            this.forcedOverview = false;
+                        }));
+                    } else {
                         Main.overview.hide();
-                        selector._showAppsButton.checked = false;
                         this.forcedOverview = false;
-                    }));
-
+                    }
                 } else {
                     selector._showAppsButton.checked = false;
+                    this.forcedOverview = false;
                 }
 
             }
@@ -1493,12 +1513,6 @@ const themeManager = new Lang.Class({
             this._actor.remove_style_class_name('shrink');
         }
 
-        if (this._settings.get_boolean('custom-theme-running-dots'))
-            this._actor.add_style_class_name('running-dots');
-        else {
-            this._actor.remove_style_class_name('running-dots');
-        }
-
     },
 
     updateCustomTheme: function() {
@@ -1593,7 +1607,6 @@ const themeManager = new Lang.Class({
                      'background-opacity',
                      'apply-custom-theme',
                      'custom-theme-shrink',
-                     'custom-theme-running-dots',
                      'extend-height'];
 
          keys.forEach(function(key){

@@ -1,3 +1,9 @@
+wasta-gnome-ext-3-18 (0.9.1) UNRELEASED; urgency=medium
+
+  * sync of many extensions for initial 'stable' xenial release
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Wed, 15 Jun 2016 13:11:00 -0500
+
 wasta-gnome-ext-3-18 (0.1.5) precise; urgency=low
 
   * rebased with upstream.  Adds better search, long labels, and
