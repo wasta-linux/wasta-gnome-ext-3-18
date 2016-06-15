@@ -1,3 +1,9 @@
+wasta-gnome-ext-3-18 (0.9.3) xenial; urgency=medium
+
+  * gnomenu: schema overrides updated for new version
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Wed, 15 Jun 2016 14:37:54 -0500
+
 wasta-gnome-ext-3-18 (0.9.2) xenial; urgency=medium
 
   * postinst: adding compile of topicons extension schemas

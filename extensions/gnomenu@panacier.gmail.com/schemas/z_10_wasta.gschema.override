@@ -15,19 +15,21 @@
 
 [org.gnome.shell.extensions.gnomenu]
 apps-list-icon-size = 24
+apps-grid-column-count = 4
 apps-grid-icon-size = 48
+apps-grid-label-width = 128
 category-selection-method = 'Hover'
 disable-activities-hotcorner = true
 disable-panel-menu-hotspot = true
 disable-panel-menu-keyboard = false
 hide-panel-apps = true
 hide-shortcuts = true
-menu-layout = 'Medium'
+menu-layout = 'Normal'
 panel-menu-icon-name = ['emblem-system-symbolic']
 panel-menu-label-text = ['Menu']
 panel-menu-keyboard-accelerator = ['<Primary>space']
 panel-view-icon-name = ['wasta-emblem-photos-symbolic']
-panel-view-label-text = ['    ']
+panel-view-label-text = ['      ']
 shortcuts-display = 'Favorites'
 shortcuts-icon-size = 32
 startup-apps-display = 'Frequent'
