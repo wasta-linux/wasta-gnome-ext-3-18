@@ -9,6 +9,7 @@
 #
 #   2015-12-26 rik: initial script
 #   2015-12-30 rik: adding user-theme schema compile
+#   2016-06-15 rik: adding workspace-isolated-dash schema compile
 #
 # ==============================================================================
 
@@ -52,6 +53,8 @@ glib-compile-schemas \
     /usr/share/gnome-shell/extensions/user-theme@gnome-shell-extensions.gcampax.github.com/schemas/
 glib-compile-schemas \
     /usr/share/gnome-shell/extensions/windowoverlay-icons@sustmidown.centrum.cz/schemas/
+glib-compile-schemas \
+    /usr/share/gnome-shell/extensions/workspace-isolated-dash@n-yuki/schemas/
 
 # ------------------------------------------------------------------------------
 # Finished
